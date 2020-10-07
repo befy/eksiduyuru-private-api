@@ -13,16 +13,24 @@ import (
 
 const BaseURL = "https://www.eksiduyuru.com"
 
+type Endpoint int
+
+const (
+	Home   Endpoint = iota // 0
+	Post                   // 1
+	Search                 // 2
+)
+
 type IScraper interface {
 	Scrape() (*goquery.Document, error)
 	GetPreviewPosts(doc *goquery.Document)
 }
 
-type Scraper struct {
-}
+type Scraper struct{}
 
-func (s *Scraper) Scrape() (*goquery.Document, error) {
-	res, err := http.Get(BaseURL)
+func (s *Scraper) Scrape(action Endpoint) (*goquery.Document, error) {
+	url := requestURLFactory(action)
+	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -38,7 +46,7 @@ func (s *Scraper) Scrape() (*goquery.Document, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	fmt.Println("burası var mı")
+
 	return doc, nil
 }
 
@@ -47,6 +55,7 @@ func (s *Scraper) GetPreviewPosts(doc *goquery.Document) *[]models.PostPreview {
 	var err error
 
 	if err = generatePostList(doc, 1, &posts); err != nil {
+		fmt.Println(err)
 		return nil
 	}
 	if err = generatePostList(doc, 0, &posts); err != nil {
@@ -63,9 +72,9 @@ func generatePostList(doc *goquery.Document, postType int, posts *[]models.PostP
 
 		title := s.Find("h2.title.closed").Text()
 		subtitle := s.Find(".bottomleft").Text()
-		strId := s.Find("ul > li:nth-child(1) > a:nth-child(2)").Text()
+		strID := s.Find("ul > li:nth-child(1) > a:nth-child(2)").Text()
 
-		id := utils.GetID(strId)
+		id := utils.GetID(strID)
 
 		if len(title) == 0 || len(subtitle) == 0 || id == 0 {
 			err = errors.New("field_missing")
@@ -81,4 +90,16 @@ func generatePostList(doc *goquery.Document, postType int, posts *[]models.PostP
 		*posts = append(*posts, post)
 	})
 	return err
+}
+
+func requestURLFactory(reqType Endpoint) string {
+	switch reqType {
+	case 0:
+		return BaseURL
+	case 1:
+		url := BaseURL
+		return url + "/duyuru/" + "1447270"
+	default:
+		return "a"
+	}
 }

@@ -10,7 +10,10 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Get("/", middlewares.Scrape, controllers.GetPostList)
+	app.Get("/post", middlewares.Scrape, controllers.GetPostList)
+	app.Get("/post/:id", middlewares.Scrape, func(c *fiber.Ctx) error {
+		return c.SendString("a")
+	})
 
 	app.Listen(":3000")
 }
