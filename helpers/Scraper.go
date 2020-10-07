@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"eksiduyuru-private-api/models"
+	"eksiduyuru-private-api/utils"
 	"errors"
 	"fmt"
 	"log"
@@ -62,9 +63,11 @@ func generatePostList(doc *goquery.Document, postType int, posts *[]models.PostP
 
 		title := s.Find("h2.title.closed").Text()
 		subtitle := s.Find(".bottomleft").Text()
-		id := s.Find("ul > li:nth-child(1) > a:nth-child(2)").Text()
+		strId := s.Find("ul > li:nth-child(1) > a:nth-child(2)").Text()
 
-		if len(title) == 0 || len(subtitle) == 0 || len(id) == 0 {
+		id := utils.GetID(strId)
+
+		if len(title) == 0 || len(subtitle) == 0 || id == 0 {
 			err = errors.New("field_missing")
 			return
 		}
