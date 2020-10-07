@@ -1,12 +1,12 @@
 package models
 
 type PostPreview struct {
-	Title    string
-	Subtitle string
-	ID       string
-	Type     PostType
+	Title    string `json:"title"`
+	Subtitle string `json:"subtitle"`
+	ID       string `json:"id"`
+	Type     int    `json:"type"`
 }
 
 type PostType struct {
-	Type int
+	Type int `json:"type"`
 }
