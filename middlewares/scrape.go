@@ -16,20 +16,19 @@ func Scrape(c *fiber.Ctx) error {
 	var id = c.Params("id")
 	path := c.Path()
 
-	ok := strings.Contains(path, "posts")
+	ok := strings.Contains(path, "post")
 
 	if ok && len(id) != 0 {
-		doc, err = scraper.Scrape(helpers.Post)
+		doc, err = scraper.Scrape(helpers.Post, id)
 	} else {
-		doc, err = scraper.Scrape(helpers.Home)
+		doc, err = scraper.Scrape(helpers.Home, "")
 	}
 
 	if err != nil {
-		c.JSON(fiber.Map{
+		return c.JSON(fiber.Map{
 			"status":  "fail",
-			"message": "deneme",
+			"message": err.Error(),
 		})
-		return err
 	}
 
 	c.Locals("scraper", scraper)
