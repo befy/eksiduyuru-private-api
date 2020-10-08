@@ -29,3 +29,15 @@ func GetPostList(c *fiber.Ctx) error {
 	})
 	return nil
 }
+
+func GetDuyuruContent(c *fiber.Ctx) error {
+	var doc *goquery.Document = c.Locals("doc").(*goquery.Document)
+	var scraper helpers.Scraper = c.Locals("scraper").(helpers.Scraper)
+
+	entries := scraper.GetEntryContent(doc)
+	c.JSON(fiber.Map{
+		"status": "success",
+		"data":   entries,
+	})
+	return nil
+}

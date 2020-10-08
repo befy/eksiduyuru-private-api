@@ -108,10 +108,7 @@ func getDuyuruContent(doc *goquery.Document, entries *[]models.Entry) {
 	context := doc.Find(".content .entrybody").Text()
 	var body string
 	if len(context) == 0 {
-		fmt.Println("hello hello")
 		return
-	} else {
-		fmt.Println("mello mello")
 	}
 	body = strings.TrimSpace(context)
 	author := doc.Find(".entryhead > ul > li:nth-child(1) > a:nth-child(1)").Text()
