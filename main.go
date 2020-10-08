@@ -11,9 +11,7 @@ func main() {
 	app := fiber.New()
 
 	app.Get("/post", middlewares.Scrape, controllers.GetPostList)
-	app.Get("/post/:id", middlewares.Scrape, func(c *fiber.Ctx) error {
-		return c.SendString("a")
-	})
+	app.Get("/post/:id", middlewares.Scrape, controllers.GetDuyuruContent)
 
 	app.Listen(":3000")
 }
