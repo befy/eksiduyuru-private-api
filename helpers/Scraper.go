@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -22,14 +23,15 @@ const (
 )
 
 type IScraper interface {
-	Scrape() (*goquery.Document, error)
+	Scrape(action Endpoint, id uint64) (*goquery.Document, error)
 	GetPreviewPosts(doc *goquery.Document)
+	GetEntryContent(doc *goquery.Document)
 }
 
 type Scraper struct{}
 
-func (s *Scraper) Scrape(action Endpoint) (*goquery.Document, error) {
-	url := requestURLFactory(action)
+func (s *Scraper) Scrape(action Endpoint, id string) (*goquery.Document, error) {
+	url := requestURLFactory(action, id)
 	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
@@ -37,8 +39,11 @@ func (s *Scraper) Scrape(action Endpoint) (*goquery.Document, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
-		return nil, err
+		//log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		if res.StatusCode == 404 {
+			return nil, errors.New("not_found_data")
+		}
+		return nil, errors.New("external_error")
 	}
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
@@ -63,6 +68,13 @@ func (s *Scraper) GetPreviewPosts(doc *goquery.Document) *[]models.PostPreview {
 	}
 
 	return &posts
+}
+
+func (s *Scraper) GetEntryContent(doc *goquery.Document) *[]models.Entry {
+	entries := make([]models.Entry, 0)
+	getDuyuruContent(doc, &entries)
+
+	return &entries
 }
 
 func generatePostList(doc *goquery.Document, postType int, posts *[]models.PostPreview) error {
@@ -92,13 +104,47 @@ func generatePostList(doc *goquery.Document, postType int, posts *[]models.PostP
 	return err
 }
 
-func requestURLFactory(reqType Endpoint) string {
+func getDuyuruContent(doc *goquery.Document, entries *[]models.Entry) {
+	context := doc.Find(".content .entrybody").Text()
+	var body string
+	if len(context) == 0 {
+		fmt.Println("hello hello")
+		return
+	} else {
+		fmt.Println("mello mello")
+	}
+	body = strings.TrimSpace(context)
+	author := doc.Find(".entryhead > ul > li:nth-child(1) > a:nth-child(1)").Text()
+
+	entry := models.Entry{
+		Text:      body,
+		Author:    author,
+		CreatedAt: "a",
+	}
+
+	*entries = append(*entries, entry)
+
+	doc.Find(".answerscontainer .answer").Each(func(i int, s *goquery.Selection) {
+		answer := strings.TrimSpace(s.Find(".answerbody").Text())
+		author := s.Find("ul.duans.poster > li").Text()
+		entry := models.Entry{
+			Text:      answer,
+			Author:    author,
+			CreatedAt: "b",
+		}
+
+		*entries = append(*entries, entry)
+	})
+
+}
+
+func requestURLFactory(reqType Endpoint, id string) string {
 	switch reqType {
-	case 0:
+	case Home:
 		return BaseURL
-	case 1:
+	case Post:
 		url := BaseURL
-		return url + "/duyuru/" + "1447270"
+		return url + "/duyuru/" + id
 	default:
 		return "a"
 	}
