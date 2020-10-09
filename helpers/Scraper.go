@@ -123,11 +123,18 @@ func getDuyuruContent(doc *goquery.Document, entries *[]models.Entry) {
 
 	doc.Find(".answerscontainer .answer").Each(func(i int, s *goquery.Selection) {
 		answer := strings.TrimSpace(s.Find(".answerbody").Text())
-		author := s.Find("ul.duans.poster > li").Text()
+		entryInfo := s.Find("ul.duans.poster > li").Text()
+
+		info := utils.ParseAuthorInfo(entryInfo)
+
+		if len(info) == 0 {
+			return
+		}
+
 		entry := models.Entry{
 			Text:      answer,
-			Author:    author,
-			CreatedAt: "b",
+			Author:    info["author"],
+			CreatedAt: info["date"],
 		}
 
 		*entries = append(*entries, entry)
