@@ -112,11 +112,13 @@ func getDuyuruContent(doc *goquery.Document, entries *[]models.Entry) {
 	}
 	body = strings.TrimSpace(context)
 	author := doc.Find(".entryhead > ul > li:nth-child(1) > a:nth-child(1)").Text()
+	dateHTML, _ := doc.Find("div.entryhead").Html()
+	date := utils.ParseDateInfoFromHeaderEntry(dateHTML)
 
 	entry := models.Entry{
 		Text:      body,
 		Author:    author,
-		CreatedAt: "a",
+		CreatedAt: date,
 	}
 
 	*entries = append(*entries, entry)
