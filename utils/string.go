@@ -18,10 +18,9 @@ func GetID(id string) uint64 {
 }
 
 func ParseAuthorInfo(info string) map[string]string {
-	re := regexp.MustCompile(`\((.*?)\)`)
-	parsedDateStr := re.FindStringSubmatch(info)
+	parsedDateStr := parseDate(info)
 
-	if len(parsedDateStr[1]) != 0 {
+	if len(parsedDateStr) != 0 {
 		author := strings.TrimSpace(strings.Split(info, parsedDateStr[0])[0])
 
 		return map[string]string{
@@ -30,4 +29,20 @@ func ParseAuthorInfo(info string) map[string]string {
 		}
 	}
 	return nil
+}
+
+func ParseDateInfoFromHeaderEntry(date string) string {
+	expression := `\bdata-tip="(.*?)"`
+	re := regexp.MustCompile(expression)
+	parsedDateStr := re.FindStringSubmatch(date)
+
+	if len(parsedDateStr[1]) != 0 {
+		return parseDate(parsedDateStr[1])[1]
+	}
+	return ""
+}
+
+func parseDate(date string) []string {
+	re := regexp.MustCompile(`\((.*?)\)`)
+	return re.FindStringSubmatch(date)
 }
